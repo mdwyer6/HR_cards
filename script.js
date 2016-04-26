@@ -1,0 +1,3 @@
+function wordfreq() {
+	alert("hello");
+}
