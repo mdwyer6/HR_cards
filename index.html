@@ -3,19 +3,21 @@
 <link rel="stylesheet" type="text/css" href="style">
 </head>
 <body>
+<div id="form">
 This app turns the most frequently used words in a foreign language text into flash cards for you to study.
   <textarea id="inputText" placeholder="Enter text here" required="True" autofocus></textarea>
   <br>
   <p id="inputTextPrompt" class="prompt"></p>
   <br>
-  Top <input type="number" id="number" required="True"> Words
+  Top <input type="number" id="numberToShow" required="True"> Words
   <br>
   <p id="numberPrompt" class="prompt"></p>
   <br>
-  Ignore top <input type="number" id="engWord" required="True"> most common English words
+  Ignore top <input type="number" id="numberToIgnore" required="True"> most common English words
   <br>
   <p id="engWordPrompt" class="prompt"></p>
   <input id="submit" type="button" value="Submit">
+</div>
 <script src="script"></script>
 </body>
 </html>
