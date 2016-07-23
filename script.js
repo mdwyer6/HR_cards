@@ -1,38 +1,44 @@
 document.getElementById('submit').onclick = function() {
+    var definitions = {};
+    var validFields = 0;
     var data = document.getElementById('inputText').value;
-    validate(ignore(makeArr(findUniq(data))));
-    
+    validate();
+    if (validFields === 3) {
+    	var wordsToDefine = ignore(makeArr(findUniq(data)));
+    	define(wordsToDefine);
+    	document.getElementById('form').innerHTML = '';
+    }
 };
 
 function findUniq(arg) {
     //creates list of every word used in input text
-    var argList = arg.toLowerCase().split(' ');
+    var allWords = arg.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").split(' ');
     var uniqueWords = [];
-    for (var i = 0, len = argList.length; i < len; i++) {
-        if (uniqueWords.indexOf(argList[i]) === -1) {
-            uniqueWords.push(argList[i]);
+    for (var i = 0, len = allWords.length; i < len; i++) {
+        if (uniqueWords.indexOf(allWords[i]) === -1) {
+            uniqueWords.push(allWords[i]);
         }
     }
-    return findFreq(uniqueWords, argList);
+    return findFreq(uniqueWords, allWords);
 }
 
-function findFreq(arr, argList) {
-    var freqList = {};
-    for (var i = 0; i < arr.length; i++) {
+function findFreq(arr, allWords) {
+    var freqObj = {};
+    for (var i = 0, len = arr.length; i < len; i++) {
         var counter = 0;
-        for (var j = 0; j < argList.length; j++) {
-            if (arr[i] === argList[j]) {
+        for (var j = 0, len2 = allWords.length; j < len2; j++) {
+            if (arr[i] === allWords[j]) {
                 counter++;
             }
         }
-        freqList[arr[i]] = counter;
+        freqObj[arr[i]] = counter;
     }
-    return freqList;
+    return freqObj;
 }
 
 function makeArr(obj) {
     var finalArr = [];
-    var max = document.getElementById('number');
+    var max = document.getElementById('numberToShow') + document.getElementById('numberToIgnore');
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
             finalArr.push([prop, obj[prop]]);
@@ -41,9 +47,8 @@ function makeArr(obj) {
     finalArr.sort(function(a, b) {
         return b[1] - a[1];
     });
-    var len = finalArr.length;
     var newArr = [];
-    for (var i = 0; i < len; i++) {
+    for (var i = 0, len = finalArr.length; i < len; i++) {
         finalArr[i].splice(1, 1);
         newArr.push(finalArr[i].toString());
     }
@@ -53,7 +58,7 @@ function makeArr(obj) {
 
 function ignore(arr) {
     var noCommon = [];
-    var max = document.getElementById('engWord').value;
+    var max = document.getElementById('numberToIgnore').value;
     var common = ['the', 'of', 'and', 'a', 'to', 'in', 'is', 'be', 'that',
         'was', 'he', 'for', 'it', 'with', 'as', 'his', 'I', 'on',
         'have', 'at', 'by', 'not', 'they', 'this', 'had', 'are', 'but',
@@ -212,9 +217,8 @@ function ignore(arr) {
         'waiting', 'popular', 'Democratic', 'film', 'mouth', 'Corps',
         'importance'
     ];
-    var len = arr.length;
     common = common.splice(0, max);
-    for (var i = 0; i < len; i++) {
+    for (var i = 0, len = arr.length; i < len; i++) {
         if (common.indexOf(arr[i]) === -1) {
             noCommon.push(arr[i]);
         }
@@ -222,50 +226,56 @@ function ignore(arr) {
     return noCommon;
 }
 
-function define(arg) {
-    var client = new XMLHttpRequest();
-    client.open('GET', 'http://api.wordnik.com:80/v4/word.json/' + arg +
-        '/definitions?limit=200&includeRelated=false&sourceDictionaries=webster&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
-        true);
-    client.send();
+function define(arr, callback) {
+    var client = [];
+    for (var i = 0, len = arr.length; i < len; i++) {
+        (function(i) {
+            client[i] = new XMLHttpRequest();
+            client[i].onreadystatechange = function() {
+                if (client[i].readyState == 4 && client[i].status == 200) {
+                    definitions[arr[i]] = client[i].responseText;
+                }
+            };
+            client[i].open('GET', 'http://api.wordnik.com:80/v4/word.json/' + arr[i] +
+                '/definitions?limit=200&includeRelated=false&sourceDictionaries=webster&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
+                true);
+            client[i].send();
+        })(i);
+    }
 }
 
-function validate(callback) {
-    var validFields = 0;
+function validate() {
     var form = {
         inputText: document.getElementById('inputText'),
-        number: document.getElementById('number'),
-        engWord: document.getElementById('engWord'),
+        numberToShow: document.getElementById('numberToShow'),
+        numberToIgnore: document.getElementById('numberToIgnore'),
     };
     document.getElementById('inputTextPrompt').innerHTML = '';
-    document.getElementById('numberPrompt').innerHTML = '';
-    document.getElementById('engWordPrompt').innerHTML = '';
+    document.getElementById('numberToShowPrompt').innerHTML = '';
+    document.getElementById('numberToIgnorePrompt').innerHTML = '';
     if (form.inputText.value === '') {
         document.getElementById('inputTextPrompt').innerHTML =
             'Please enter written text';
     } else {
         validFields++;
     }
-    if (form.number.value < 1 || form.number.value > 20) {
-        document.getElementById('numberPrompt').innerHTML =
+    if (form.numberToShow.value < 1 || form.numberToShow.value > 20) {
+        document.getElementById('numberToShowPrompt').innerHTML =
             'Please enter a number between 1 and 20';
-    } else if (!Number.isInteger(Number(form.number.value))) {
-        document.getElementById('numberPrompt').innerHTML =
+    } else if (!Number.isInteger(Number(form.numberToShow.value))) {
+        document.getElementById('numberToShowPrompt').innerHTML =
             'Number must be an integer';
     } else {
         validFields++;
     }
-    if (form.engWord.value === '' || form.engWord.value < 0 || form.engWord
+    if (form.numberToIgnore.value === '' || form.numberToIgnore.value < 0 || form.numberToIgnore
         .value > 1000) {
-        document.getElementById('engWordPrompt').innerHTML =
+        document.getElementById('numberToIgnorePrompt').innerHTML =
             'Please enter a number between 0 and 1000';
-    } else if (!Number.isInteger(Number(form.engWord.value))) {
-        document.getElementById('engWordPrompt').innerHTML =
+    } else if (!Number.isInteger(Number(form.numberToIgnore.value))) {
+        document.getElementById('numberToIgnorePrompt').innerHTML =
             'Number must be an integer';
     } else {
         validFields++;
-    }
-    if (validFields === 3) {
-        callback();
     }
 }
