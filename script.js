@@ -1,12 +1,10 @@
 document.getElementById('submit').onclick = function() {
-    var definitions = {};
-    var validFields = 0;
     var data = document.getElementById('inputText').value;
     validate();
-    if (validFields === 3) {
+    if (validate()) {
     	var wordsToDefine = ignore(makeArr(findUniq(data)));
     	define(wordsToDefine);
-    	document.getElementById('form').innerHTML = '';
+    	document.getElementById('form').innerHTML = 'Form Submitted';
     }
 };
 
@@ -194,7 +192,7 @@ function ignore(arr) {
         'cover', 'meaning', 'progress', 'treatment', 'beautiful',
         'placed', 'happy', 'attack', 'apparently', 'blood', 'groups',
         'carried', 'sign', 'radio', 'dance', 'Ive', 'regard', 'mans',
-        'train', 'herself', 'numbers', 'corner', 'REACTION',
+        'train', 'herself', 'numbers', 'corner', 'reaction',
         'immediately', 'language', 'running', 'recently', 'shake',
         'larger', 'lower', 'machine', 'attempt', 'learn', 'couple',
         'race', 'audience', 'Oh', 'middle', 'brown', 'date', 'health',
@@ -226,8 +224,9 @@ function ignore(arr) {
     return noCommon;
 }
 
-function define(arr, callback) {
+function define(arr) {
     var client = [];
+    var definitions = {};
     for (var i = 0, len = arr.length; i < len; i++) {
         (function(i) {
             client[i] = new XMLHttpRequest();
@@ -245,6 +244,7 @@ function define(arr, callback) {
 }
 
 function validate() {
+    var validFields = 0;
     var form = {
         inputText: document.getElementById('inputText'),
         numberToShow: document.getElementById('numberToShow'),
@@ -277,5 +277,10 @@ function validate() {
             'Number must be an integer';
     } else {
         validFields++;
+    }
+    if (validFields === 3) {
+    	return true;
+    } else {
+    	return false;
     }
 }
