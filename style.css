@@ -1,3 +1,68 @@
 .prompt {
 	color: red;
 }
+
+body {
+	background-color: #2E425A;
+}
+
+p {
+	font-family: "Tahoma", Geneva, sans-serif;
+	font-size: 16px
+	padding: 0;
+    margin-left: 2px;
+}
+
+textarea {
+	margin: 10px;
+	height: 80px;
+	font-family: "Tahoma", Geneva, sans-serif;
+}
+
+.form-input {
+    display: block;
+    width: 98%; /* 100% goes slightly past container element*/
+    margin-left: auto;
+    margin-right: auto;
+    height: 30px;
+}
+
+#form {
+	background-color: #F4F4F4;
+	margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+}
+
+#submit {
+	background-color: #D7624E;
+	color:#FFFFFF;
+	display:block;
+	margin: 0;
+	padding: 10px 0 10px 0;
+    font-size: 24px;
+    font-family: "Bitter",serif;
+    border-radius: 0;
+    width: 100%;
+    font-weight: bold;
+}
+
+#submit:hover {
+    background-color: #BB412B;
+}
+
+#submit:active {
+	background-color: #982813;
+}
+
+h1 {
+	color: white;
+	text-align: center;
+	font-size: 96px;
+	margin:0 0 10px 0;
+	padding:0;
+}
+
+[placeholder]:focus::-webkit-input-placeholder {
+  color: transparent;
+}
