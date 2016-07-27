@@ -3,17 +3,16 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+h1>Study App</h1>
 <div id="form">
-This app turns the most frequently used words in a foreign language text into flash cards for you to study.
-  <textarea id="inputText" placeholder="Enter text here" required="True" autofocus></textarea>
+<p>This app finds the most commonly used words in any text (e.g., a book chapter, research paper, news article) and turns them into flash cards to study from.</p>
   <br>
+  <p>Enter the text you would like to study:</p>
+  <textarea id="inputText" placeholder="Enter your text here" rows="4" class="form-input"></textarea>
   <p id="inputTextPrompt" class="prompt"></p>
-  <br>
-  Top <input type="number" id="numberToShow" required="True"> Words
-  <br>
+  <p>How many words to display?</p><input type="number" id="numberToShow" class="form-input" placeholder="Enter number between 1 and 20">
   <p id="numberToShowPrompt" class="prompt"></p>
-  <br>
-  Ignore top <input type="number" id="numberToIgnore" required="True"> most common English words
+  <p>How many of the most common english words should we assume you already know?</p><input type="number" id="numberToIgnore" class="form-input" placeholder="Enter number between 0 and 1000">
   <br>
   <p id="numberToIgnorePrompt" class="prompt"></p>
   <input id="submit" type="button" value="Submit">
