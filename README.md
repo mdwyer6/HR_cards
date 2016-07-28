@@ -1,1 +1,3 @@
-"# HR_cards" 
+## Synopsis
+
+This app provides users with the ability to parse any text to compile the most frequently used word and turn them into interactive flashcards. Defintiions are provided through calls to the wordnik API
