@@ -1,26 +1,33 @@
+/*
+ *TODOS: 
+ *numbertoshow must account for numbertoignore
+ *inputting non words throws an error
+ *error leaves page blank
+ *multiple spaces between words throws error
+ *is displaying more words than numtoshow
+ */
 document.getElementById('submit').onclick = function() {
-    var data = document.getElementById('inputText').value;
     validate();
     if (validate()) {
-    	var wordsToDefine = ignore(makeArr(findUniq(data)));
-    	define(wordsToDefine);
-    	document.getElementById('form').innerHTML = 'Form Submitted';
+    	makeFlashCards();
     }
 };
 
-function findUniq(arg) {
-    //creates list of every word used in input text
-    var allWords = arg.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").split(' ');
+function findUniq(arg) { //creates list of every word used in input text
+    var allWords = arg.toLowerCase()
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+        .split(' ');
     var uniqueWords = [];
     for (var i = 0, len = allWords.length; i < len; i++) {
         if (uniqueWords.indexOf(allWords[i]) === -1) {
             uniqueWords.push(allWords[i]);
         }
     }
+
     return findFreq(uniqueWords, allWords);
 }
 
-function findFreq(arr, allWords) {
+function findFreq(arr, allWords) { //counts times each word is used
     var freqObj = {};
     for (var i = 0, len = arr.length; i < len; i++) {
         var counter = 0;
@@ -31,6 +38,7 @@ function findFreq(arr, allWords) {
         }
         freqObj[arr[i]] = counter;
     }
+
     return freqObj;
 }
 
@@ -42,19 +50,22 @@ function makeArr(obj) {
             finalArr.push([prop, obj[prop]]);
         }
     }
+
     finalArr.sort(function(a, b) {
         return b[1] - a[1];
     });
+
     var newArr = [];
     for (var i = 0, len = finalArr.length; i < len; i++) {
         finalArr[i].splice(1, 1);
         newArr.push(finalArr[i].toString());
     }
+
     newArr.splice(0, max);
     return newArr;
 }
 
-function ignore(arr) {
+function ignore(arr) { //filters out most common english words
     var noCommon = [];
     var max = document.getElementById('numberToIgnore').value;
     var common = ['the', 'of', 'and', 'a', 'to', 'in', 'is', 'be', 'that',
@@ -221,10 +232,12 @@ function ignore(arr) {
             noCommon.push(arr[i]);
         }
     }
+
     return noCommon;
 }
 
 function define(arr) {
+	return new Promise(function(resolve, reject) {
     var client = [];
     var definitions = {};
     for (var i = 0, len = arr.length; i < len; i++) {
@@ -232,15 +245,21 @@ function define(arr) {
             client[i] = new XMLHttpRequest();
             client[i].onreadystatechange = function() {
                 if (client[i].readyState == 4 && client[i].status == 200) {
-                    definitions[arr[i]] = client[i].responseText;
+                    definitions[arr[i]] = JSON.parse(client[i].responseText);
+                    if (Object.keys(definitions).length === arr.length) {
+                        resolve(definitions); 
+                    } else if (arr.length === i) { //error thrown if obj isn't expected size after async calls finish
+                    	reject();
+                    }
                 }
             };
             client[i].open('GET', 'http://api.wordnik.com:80/v4/word.json/' + arr[i] +
-                '/definitions?limit=200&includeRelated=false&sourceDictionaries=webster&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
+                '/definitions?limit=1&includeRelated=false&sourceDictionaries=all&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
                 true);
             client[i].send();
         })(i);
     }
+})
 }
 
 function validate() {
@@ -259,28 +278,75 @@ function validate() {
     } else {
         validFields++;
     }
+
     if (form.numberToShow.value < 1 || form.numberToShow.value > 20) {
         document.getElementById('numberToShowPrompt').innerHTML =
             'Please enter a number between 1 and 20';
     } else if (!Number.isInteger(Number(form.numberToShow.value))) {
         document.getElementById('numberToShowPrompt').innerHTML =
-            'Number must be an integer';
+            'Must be a whole number';
     } else {
         validFields++;
     }
+
     if (form.numberToIgnore.value === '' || form.numberToIgnore.value < 0 || form.numberToIgnore
         .value > 1000) {
         document.getElementById('numberToIgnorePrompt').innerHTML =
             'Please enter a number between 0 and 1000';
     } else if (!Number.isInteger(Number(form.numberToIgnore.value))) {
         document.getElementById('numberToIgnorePrompt').innerHTML =
-            'Number must be an integer';
+            'Must be a whole number';
     } else {
         validFields++;
     }
+
     if (validFields === 3) {
     	return true;
     } else {
     	return false;
     }
+}
+
+function makeFlashCards() {
+	var data = document.getElementById('inputText').value;
+    var wordsToDefine = ignore(makeArr(findUniq(data)));
+    define(wordsToDefine).then(function(result) {
+    	success(result);
+    }).catch(function() {
+    	alert('There has been an error');
+    });
+}
+
+function success(obj) {
+	document.getElementById('form').innerHTML = '';
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop)) {
+            addElement('div',obj[prop][0].word);
+        } 
+    }
+    attachDefinition();
+}
+
+function addElement(type, word) {
+	var newElement = document.createElement(type);
+	var content = document.createTextNode(word)
+	newElement.appendChild(content);
+	var referenceNode = document.getElementById('form');
+	document.body.insertBefore(newElement, referenceNode);
+	newElement.id = word;
+	newElement.className = "flashcards";
+}
+
+function attachDefinition() {
+	var classArr = document.getElementsByClassName("flashcards");
+	for (var i = 0, len = classArr.length; i < len; i++) {
+		classArr[i].addEventListener('click', cardClicked)
+	}
+}
+
+function cardClicked() {
+	var img = document.createElement('img');
+	img.src = 'https://www.wordnik.com/img/wordnik_badge_a2.png';
+    document.getElementById(this.id).innerHTML = '';
+    document.getElementById(this.id).appendChild(img);
 }
