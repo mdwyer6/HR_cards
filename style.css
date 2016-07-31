@@ -64,5 +64,20 @@ h1 {
 }
 
 [placeholder]:focus::-webkit-input-placeholder {
-  color: transparent;
+    color: transparent;
+}
+
+.flashcards {
+	display: block;
+    border-style: solid;
+    border-color: black;
+    width: 70%;
+    margin: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #F4F4F4;
+    height: 50px;
+    font-size: 36px;
+    text-align: center;
+    font-weight: bold;
 }
