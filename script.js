@@ -355,21 +355,22 @@ function attachDefinition(obj) {
 }
 
 function cardClicked(obj) {
+	var el = document.getElementById(this.id);
 	if (this.innerHTML.split(' ').length === 1) {
 	    var img = document.createElement('img');
 	    img.src = 'https://www.wordnik.com/img/wordnik_badge_a2.png';
-        document.getElementById(this.id).innerHTML = obj[this.id][0].text 
+        el.innerHTML = obj[this.id][0].text 
             + ' ' + obj[this.id][0].attributionText + '<br>';
-        document.getElementById(this.id).style['font-weight'] = 'normal';
-        document.getElementById(this.id).style['font-size'] = '16px';
-        document.getElementById(this.id).style['text-align'] = 'left';
-        document.getElementById(this.id).style['overflow'] = 'auto';
-        document.getElementById(this.id).appendChild(img);
+        el.style['font-weight'] = 'normal';
+        el.style['font-size'] = '16px';
+        el.style['text-align'] = 'left';
+        el.style['overflow'] = 'auto';
+        el.appendChild(img);
     } else {
-    	document.getElementById(this.id).innerHTML = obj[this.id][0].word;
-    	document.getElementById(this.id).style['font-weight'] = 'bold';
-        document.getElementById(this.id).style['font-size'] = '36px';
-        document.getElementById(this.id).style['text-align'] = 'center';
-        document.getElementById(this.id).style['overflow'] = 'visible';
+    	el.innerHTML = obj[this.id][0].word;
+    	el.style['font-weight'] = 'bold';
+        el.style['font-size'] = '36px';
+        el.style['text-align'] = 'center';
+        el.style['overflow'] = 'visible';
     }
 }
