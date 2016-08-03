@@ -1,11 +1,3 @@
-/*
- *TODOS: 
- *numbertoshow must account for numbertoignore
- *inputting non words throws an error
- *error leaves page blank
- *multiple spaces between words throws error
- *is displaying more words than numtoshow
- */
 document.getElementById('submit').onclick = function() {
     validate();
     if (validate()) {
@@ -15,7 +7,9 @@ document.getElementById('submit').onclick = function() {
 
 function findUniq(arg) { //creates list of every word used in input text
     var allWords = arg.toLowerCase()
-        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,'')
+        .replace(/\s+/g, ' ')
+        .trim()
         .split(' ');
     var uniqueWords = [];
     for (var i = 0, len = allWords.length; i < len; i++) {
@@ -44,30 +38,33 @@ function findFreq(arr, allWords) { //counts times each word is used
 
 function makeArr(obj) {
     var finalArr = [];
-    var max = document.getElementById('numberToShow') + document.getElementById('numberToIgnore');
-    for (var prop in obj) {
+    var numberToShow = parseInt(document.getElementById('numberToShow').value, 10);
+    var numberToIgnore = parseInt(document.getElementById('numberToIgnore').value, 10); 
+    var max = numberToShow + numberToIgnore; //numberToIgnore added because it will be subtracted back out in ignore function
+    for (var prop in obj) { //obj converted to multidimensional arr with frequency info
         if (obj.hasOwnProperty(prop)) {
             finalArr.push([prop, obj[prop]]);
         }
     }
 
-    finalArr.sort(function(a, b) {
+    finalArr.sort(function(a, b) { //2d array sorted by frequency
         return b[1] - a[1];
     });
 
     var newArr = [];
-    for (var i = 0, len = finalArr.length; i < len; i++) {
+    for (var i = 0, len = finalArr.length; i < len; i++) { //freq info removed from sorted arr
         finalArr[i].splice(1, 1);
         newArr.push(finalArr[i].toString());
     }
 
-    newArr.splice(0, max);
+    newArr.splice(max, newArr.length);
     return newArr;
 }
 
 function ignore(arr) { //filters out most common english words
     var noCommon = [];
-    var max = document.getElementById('numberToIgnore').value;
+    var numberToShow = parseInt(document.getElementById('numberToShow').value, 10);
+    var max = parseInt(document.getElementById('numberToIgnore').value, 10);
     var common = ['the', 'of', 'and', 'a', 'to', 'in', 'is', 'be', 'that',
         'was', 'he', 'for', 'it', 'with', 'as', 'his', 'I', 'on',
         'have', 'at', 'by', 'not', 'they', 'this', 'had', 'are', 'but',
@@ -232,34 +229,33 @@ function ignore(arr) { //filters out most common english words
             noCommon.push(arr[i]);
         }
     }
-
+    
+    noCommon.splice(numberToShow, noCommon.length);
     return noCommon;
 }
 
-function define(arr) {
+function define(arr) { //pyramid of doom at the expense of adding abstraction
 	return new Promise(function(resolve, reject) {
     var client = [];
     var definitions = {};
     for (var i = 0, len = arr.length; i < len; i++) {
         (function(i) {
             client[i] = new XMLHttpRequest();
-            client[i].onreadystatechange = function() {
-                if (client[i].readyState == 4 && client[i].status == 200) {
+            client[i].onreadystatechange = function() {	
+            if (client[i].readyState === 4 && client[i].status === 200) {
                     definitions[arr[i]] = JSON.parse(client[i].responseText);
                     if (Object.keys(definitions).length === arr.length) {
                         resolve(definitions); 
-                    } else if (arr.length === i) { //error thrown if obj isn't expected size after async calls finish
-                    	reject();
-                    }
-                }
+                    } 
+                } 
             };
-            client[i].open('GET', '//api.wordnik.com:80/v4/word.json/' + arr[i] +
+            client[i].open('GET', 'http://api.wordnik.com:80/v4/word.json/' + arr[i] +
                 '/definitions?limit=1&includeRelated=false&sourceDictionaries=all&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
                 true);
             client[i].send();
         })(i);
     }
-})
+});
 }
 
 function validate() {
@@ -321,15 +317,15 @@ function success(obj) {
 	document.getElementById('form').innerHTML = '';
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
-            addElement('div',obj[prop][0].word);
+            addElement('div', obj[prop][0].word);
         } 
     }
-    attachDefinition();
+    attachDefinition(obj);
 }
 
 function addElement(type, word) {
 	var newElement = document.createElement(type);
-	var content = document.createTextNode(word)
+	var content = document.createTextNode(word);
 	newElement.appendChild(content);
 	var referenceNode = document.getElementById('form');
 	document.body.insertBefore(newElement, referenceNode);
@@ -337,16 +333,43 @@ function addElement(type, word) {
 	newElement.className = "flashcards";
 }
 
-function attachDefinition() {
+/*function attachDefinition(obj) {
+	console.log(obj);
 	var classArr = document.getElementsByClassName("flashcards");
 	for (var i = 0, len = classArr.length; i < len; i++) {
-		classArr[i].addEventListener('click', cardClicked)
+		(function(index) {
+		    classArr[i].addEventListener('click', function(obj) {
+			    cardClicked(obj);
+			});
+		})(i);
+	}
+}*/
+
+function attachDefinition(obj) {
+	var classArr = document.getElementsByClassName('flashcards');
+	for (let i = 0, len = classArr.length; i < len; i++) {
+		    classArr[i].addEventListener('click', function() {
+		    	cardClicked.call(this, obj);
+		    });
 	}
 }
 
-function cardClicked() {
-	var img = document.createElement('img');
-	img.src = 'https://www.wordnik.com/img/wordnik_badge_a2.png';
-    document.getElementById(this.id).innerHTML = '';
-    document.getElementById(this.id).appendChild(img);
+function cardClicked(obj) {
+	if (this.innerHTML.split(' ').length === 1) {
+	    var img = document.createElement('img');
+	    img.src = 'https://www.wordnik.com/img/wordnik_badge_a2.png';
+        document.getElementById(this.id).innerHTML = obj[this.id][0].text 
+            + ' ' + obj[this.id][0].attributionText + '<br>';
+        document.getElementById(this.id).style['font-weight'] = 'normal';
+        document.getElementById(this.id).style['font-size'] = '16px';
+        document.getElementById(this.id).style['text-align'] = 'left';
+        document.getElementById(this.id).style['overflow'] = 'auto';
+        document.getElementById(this.id).appendChild(img);
+    } else {
+    	document.getElementById(this.id).innerHTML = obj[this.id][0].word;
+    	document.getElementById(this.id).style['font-weight'] = 'bold';
+        document.getElementById(this.id).style['font-size'] = '36px';
+        document.getElementById(this.id).style['text-align'] = 'center';
+        document.getElementById(this.id).style['overflow'] = 'visible';
+    }
 }
