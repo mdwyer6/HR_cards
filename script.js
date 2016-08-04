@@ -234,7 +234,7 @@ function ignore(arr) { //filters out most common english words
     return noCommon;
 }
 
-function define(arr) { //pyramid of doom at the expense of adding abstraction
+function define(arr) {
 	return new Promise(function(resolve, reject) {
     var client = [];
     var definitions = {};
@@ -242,12 +242,21 @@ function define(arr) { //pyramid of doom at the expense of adding abstraction
         (function(i) {
             client[i] = new XMLHttpRequest();
             client[i].onreadystatechange = function() {	
-            if (client[i].readyState === 4 && client[i].status === 200) {
-                    definitions[arr[i]] = JSON.parse(client[i].responseText);
+                if (client[i].readyState === 4 && client[i].status === 200) {
+                	if (client[i].responseText && JSON.parse(client[i].responseText).length === 0) {
+                		let parsedResponse = JSON.parse(client[i].responseText)[0] = [{
+                			word: arr[i],
+                			text: 'Definition not found',
+                			attributionText: ''
+                		}];
+                        definitions[arr[i]] = parsedResponse;
+                	} else {
+                        definitions[arr[i]] = JSON.parse(client[i].responseText);
+                    }
                     if (Object.keys(definitions).length === arr.length) {
                         resolve(definitions); 
                     } 
-                } 
+                }
             };
             client[i].open('GET', 'http://api.wordnik.com:80/v4/word.json/' + arr[i] +
                 '/definitions?limit=1&includeRelated=false&sourceDictionaries=all&useCanonical=false&includeTags=false&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5',
@@ -310,7 +319,7 @@ function makeFlashCards() {
     	success(result);
     }).catch(function() {
     	alert('There has been an error');
-    });
+    }); 
 }
 
 function success(obj) {
@@ -333,18 +342,6 @@ function addElement(type, word) {
 	newElement.className = "flashcards";
 }
 
-/*function attachDefinition(obj) {
-	console.log(obj);
-	var classArr = document.getElementsByClassName("flashcards");
-	for (var i = 0, len = classArr.length; i < len; i++) {
-		(function(index) {
-		    classArr[i].addEventListener('click', function(obj) {
-			    cardClicked(obj);
-			});
-		})(i);
-	}
-}*/
-
 function attachDefinition(obj) {
 	var classArr = document.getElementsByClassName('flashcards');
 	for (let i = 0, len = classArr.length; i < len; i++) {
@@ -356,6 +353,7 @@ function attachDefinition(obj) {
 
 function cardClicked(obj) {
 	var el = document.getElementById(this.id);
+	if (obj[this.id].length !== 0) {
 	if (this.innerHTML.split(' ').length === 1) {
 	    var img = document.createElement('img');
 	    img.src = 'https://www.wordnik.com/img/wordnik_badge_a2.png';
@@ -373,4 +371,5 @@ function cardClicked(obj) {
         el.style['text-align'] = 'center';
         el.style['overflow'] = 'visible';
     }
+}
 }
