@@ -357,19 +357,18 @@ function cardClicked(obj) {
 	if (this.innerHTML.split(' ').length === 1) {
 	    var img = document.createElement('img');
 	    img.src = 'https://www.wordnik.com/img/wordnik_badge_a2.png';
-        el.innerHTML = obj[this.id][0].text 
-            + ' ' + obj[this.id][0].attributionText + '<br>';
+        el.innerHTML = obj[this.id][0].text + ' ' + obj[this.id][0].attributionText + '<br>';
         el.style['font-weight'] = 'normal';
         el.style['font-size'] = '16px';
         el.style['text-align'] = 'left';
-        el.style['overflow'] = 'auto';
+        el.style.overflow = 'auto';
         el.appendChild(img);
     } else {
     	el.innerHTML = obj[this.id][0].word;
     	el.style['font-weight'] = 'bold';
         el.style['font-size'] = '36px';
         el.style['text-align'] = 'center';
-        el.style['overflow'] = 'visible';
+        el.style.overflow = 'visible';
     }
 }
 }
