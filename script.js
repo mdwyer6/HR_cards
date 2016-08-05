@@ -7,8 +7,8 @@ document.getElementById('submit').onclick = function() {
 
 function findUniq(arg) { //creates list of every word used in input text
     var allWords = arg.toLowerCase()
-        .replace(/[?".,\/#!$%\^&\*;:{}=\-_`~()]/g,'')
-        .replace(/[\u2014\u2013]/g, ' ')
+        .replace(/[".,\/#!$%\^&\*;:{}=\-_`~()]/g,'')
+        .replace(/[\u2014\u2013\u0022]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
         .split(' ');
